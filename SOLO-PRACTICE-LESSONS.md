@@ -333,3 +333,40 @@ TTS_URL=https://your-twiml-endpoint   # returns <Say fr-CA> or <Play> AI audio
 
 Costs are in Lesson 9 above. **Hand this whole file to Claude Code** to wire
 your real Spruce endpoints, your AI-voice TwiML, and your clinic details.
+
+## Lesson 2b — Brief message, English version, and why it works
+
+**Why this matters more than anything (real result):** Google reviews are a
+repository of the angry few who try to attack or destroy a doctor's
+reputation — the satisfied majority stay silent. Doing this **systematically**
+gives a far less opinionated, more representative picture: lots of people
+thank you, but **if you don't capture it, nobody knows.** This exact system
+took my clinic from about **2/5 stars** to a true reflection of the care
+given. See the proof — the verbatim, anonymized thank-yous at
+**instanthpi.ai/thankyou** (mirror: instanthpi.netlify.app/thankyou).
+
+**Brief version of the closing message:**
+```
+Votre prescription a été transmise à votre pharmacie. Vérifiez auprès d'eux
+qu'elle est prête avant de vous y rendre.
+
+Comme vous recevez un traitement et avez des symptômes, gardez un suivi avec
+moi ici dans 14 jours. Ne prenez pas de rendez-vous, écrivez-moi simplement ici.
+
+🛻💨 ➕ 🤧🤒😩 ➡️ 📲👨‍⚕️📝💊 ➡️ 😌💪🛣️🌟
+
+Truck Stop Santé à votre service. 🫡🚚
+
+Merci de partager votre expérience avec notre clinique : cela aide d'autres
+personnes à comprendre nos services.
+Vous pouvez laisser votre avis ici : https://g.page/r/CS7XOfBDzFhoEAI/review
+```
+
+**The share ask in English (adapt clinic name + link):**
+```
+[Your Clinic] at your service. 🫡
+
+Thank you for sharing your experience with our clinic — it helps other people
+understand our services.
+You can leave your review of this experience here: [your review link]
+```

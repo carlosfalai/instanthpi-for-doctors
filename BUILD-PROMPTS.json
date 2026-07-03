@@ -1,0 +1,48 @@
+{
+  "_about": "InstantHPI — Tools for the Modern Doctor. Copy-paste build prompts for Claude Code. Open each in a fresh repo, paste the 'prompt', answer Claude's questions, and it builds that piece from A to Z. Adapt clinic name, credentials, signature. These are maquettes — review everything the AI produces; you sign it, you own it. Contact: cff@centremedicalfont.ca",
+  "_how_to_use": "Install Claude Code. In a new folder run `claude`, then paste one 'prompt' below. Provide your own API keys when asked; never commit them.",
+  "_costs_reference": "Per full AI consult ~1c (DeepSeek) to ~40c (top model); council ~15-30c. Invitation sequence <$0.50/patient. Spruce ~$25-50/mo, Twilio number ~$1.15/mo, SRFax per plan. Real patient data => AWS Bedrock BAA only, or local Ollama.",
+
+  "tools": [
+    {
+      "id": "free-bot",
+      "name": "Free educational intake bot (patient magnet)",
+      "prompt": "Build a Telegram health-education bot from the InstantHPI kit at github.com/carlosfalai/free-universal-healthcare-ai. Follow its CLAUDE-BUILD-INSTRUCTIONS.md. Wire it to [my model: DeepSeek / local Ollama / Bedrock]. Keep the 18-question OPQRST intake, the HPI summary + 10 follow-ups, the multi-AI council with citations, and the de-identification rule. It is educational only, no doctor behind it, AI-automated disclaimer on. My clinic name and bot handle: ___."
+    },
+    {
+      "id": "reputation",
+      "name": "Reputation builder (systematic review collection)",
+      "prompt": "Build me a reputation system for my async clinic. After EVERY first patient encounter, automatically queue a closing message that (a) confirms the plan, (b) sets a 14-day async follow-up, (c) states my scope, (d) promotes my free bot, and (e) asks the patient to SHARE their experience with a review link. Send it systematically even when I forget. Use the brief template I provide. Why this matters: Google reviews are a repository of the angry few who try to attack or destroy a doctor's reputation; systematic collection after positive first encounters floods that with real, representative experiences. This exact system took my clinic from ~2/5 stars to a true reflection of care. Clinic name / review link / signature: ___."
+    },
+    {
+      "id": "invitation",
+      "name": "Invitation sequence (SMS + email + 3 AI calls -> SOAP)",
+      "prompt": "Build the patient invitation sequence as a PowerShell-launched Node script (see invite.js in github.com/carlosfalai/instanthpi-for-doctors). I paste today's list `Name, +phone, email`. For each: send SMS via Twilio + email via SMTP asking them to log into my Spruce link for their conversation; poll the Spruce API to detect if they joined; if not, place up to 3 AI voice calls (Twilio + [Gemini/Nova Sonic]) spaced across the day with my call script; if all 3 fail, draft a SOAP note from booking info and email the patient a summary of every step. Log to CSV. Keys via env. Clinic name/credentials/signature/call-script: ___."
+    },
+    {
+      "id": "pdf-filler",
+      "name": "PDF filler (form + note in, filled form out)",
+      "prompt": "Build the clinic version of github.com/carlosfalai/instanthpi-pdf-filler. Keep the never-invent rule and blank-field flagging. Wire the LLM to [local Ollama for privacy / AWS Bedrock BAA]. Add a drag-and-drop Electron window around fill.js, package as .exe (npm run build-exe), and add a coordinate-based fallback for flat/scanned PDFs using pdf-lib drawText. No network calls beyond my LLM endpoint. Load my templates: ___."
+    },
+    {
+      "id": "scan-pipeline",
+      "name": "Scan/fax -> OCR -> route -> draft (BAA)",
+      "prompt": "Build a BAA-safe document pipeline: a scanned PDF or inbound fax arrives; OCR + read it with Claude Sonnet 5 on AWS Bedrock (my BAA); classify the document; generate (a) a patient message and (b) a mini-SOAP note; push both through the Spruce API into the conversation and the internal note for my review. Outbound faxing via SRFax API. Everything stays inside BAA-covered systems; identity stays in my EMR. Templates + clinic details: ___."
+    },
+    {
+      "id": "voice-intake",
+      "name": "AI phone intake (pre-visit)",
+      "prompt": "Build the AI phone-intake system from VOICE-INTAKE-CALLS.md in github.com/carlosfalai/instanthpi-for-doctors. Secure build: AWS Nova Sonic on Bedrock (BAA) + Twilio (BAA), transcript to S3 (SSE), then #7 reasoning + document drafts on Bedrock. The call runs my scripted intake: questions -> HPI confirm -> 10 follow-ups; it never gives advice. Add consent line at call start + voicemail handling. If in-region processing is required, use Transcribe->Bedrock->Polly in my region instead. Clinic/script: ___."
+    },
+    {
+      "id": "council",
+      "name": "Multi-AI council reasoning (#7)",
+      "prompt": "Build the multi-AI council: take a de-identified case, send it independently to 2-3 models, then have one model compare them, surface disagreement, and produce a consensus report where each position cites a study or guideline. Output is marked as the answers of multiple AIs, in the patient's language, physician confirms. This is my #7 reasoning step. Models: ___."
+    },
+    {
+      "id": "carousel",
+      "name": "Decision carousel + work ledger",
+      "prompt": "Build a decision carousel: pull my waiting patients from all channels (Spruce, fax, email) into one worklist using an inbound-last rule (no recycled/double-shown cases); build one locked-spec card per patient (identity, labs, options with a recommendation), live-verified at serve time; I swipe a decision; an append-only work-ledger state machine logs it and an executor carries it out idempotently. Clinic wiring: ___."
+    }
+  ]
+}
