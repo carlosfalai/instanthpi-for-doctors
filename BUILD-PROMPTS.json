@@ -1,8 +1,7 @@
 {
   "_about": "InstantHPI — Tools for the Modern Doctor. Copy-paste build prompts for Claude Code. Open each in a fresh repo, paste the 'prompt', answer Claude's questions, and it builds that piece from A to Z. Adapt clinic name, credentials, signature. These are maquettes — review everything the AI produces; you sign it, you own it. Contact: cff@centremedicalfont.ca",
   "_how_to_use": "Install Claude Code. In a new folder run `claude`, then paste one 'prompt' below. Provide your own API keys when asked; never commit them.",
-  "_costs_reference": "Per full AI consult ~1c (DeepSeek) to ~40c (top model); council ~15-30c. Invitation sequence <$0.50/patient. Spruce ~$25-50/mo, Twilio number ~$1.15/mo, SRFax per plan. Real patient data => AWS Bedrock BAA only, or local Ollama.",
-
+  "_costs_reference": "VERIFIED 2026-07-03 (see REAL-PRICES.md for sources): Spruce Basic $24/user/mo, Communicator $49 (BAA + API included). Twilio US SMS $0.0083, voice $0.014/min (BAA=contact sales; use Amazon Connect $0.038/min under AWS BAA instead). SRFax healthcare from $12.60 CAD/mo/200 pages, $0.05/page overage, BAA all tiers. AWS Textract $0.0015/page. DeepSeek v4-flash $0.14/$0.28 per 1M tokens => consult <1c. ElevenLabs BAA=Enterprise only, overage $0.08/min. Claude Bedrock: Haiku $1/$5, Sonnet $3/$15, Opus $5/$25 per 1M. Typical solo day total: $5-10.",
   "tools": [
     {
       "id": "free-bot",
