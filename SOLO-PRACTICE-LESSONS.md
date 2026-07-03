@@ -170,3 +170,47 @@ Bedrock (BAA-covered models), Telegram Bot API (patient-facing bots). Every
 tool in this ecosystem is a maquette you can hand to Claude Code: "adapt
 this to my clinic" — name, credentials, signature, language. The doctor who
 owns their tools owns their time.
+
+## Lesson 9 — The invitation sequence (SMS + email + 3 AI calls)
+
+Getting patients ONTO the secure channel is its own system. Ours, end to end:
+
+**The flow per patient:**
+1. **SMS + email invitation** — "log in to Spruce" (the secure channel), with
+   the link. Sent the moment they're on today's list.
+2. **Verify joined** — did they appear in Spruce? If yes, done.
+3. **AI call #1, #2, #3** — a natural-voice AI phones them (we validated a
+   Twilio⇄AI bridge that sounds genuinely human in French), explains, and
+   walks them into logging in. Spaced across the day.
+4. **All 3 calls fail →** generate the SOAP note anyway from what we have,
+   and **email the patient** a summary of every step we took and how to
+   reach us. Nothing silently dropped; the chart shows the whole trail.
+
+**How you run it — a terminal, nothing fancier:** open PowerShell, run the
+script, and **paste today's patient list (name, phone, email — one per
+line).** The system does the rest and prints a status table: joined /
+calling / exhausted→emailed+SOAP.
+
+**Build it yourself — paste this to Claude Code:**
+
+> "Build me the patient invitation sequence as a PowerShell-launched Node
+> script: I paste lines of `name, phone, email`. For each: (1) send SMS via
+> Twilio API + email via my SMTP asking them to join my Spruce link; (2)
+> poll the Spruce API to detect if they joined; (3) if not joined after N
+> hours, place up to 3 AI voice calls via Twilio using [Gemini/Nova Sonic]
+> with this exact script: [paste your call script]; (4) if all 3 fail,
+> draft a SOAP note from the booking info and send the patient a summary
+> email of all attempts. Log every step to a CSV. Use env vars for all
+> keys. My clinic name/credentials/signature: [yours]."
+
+**What it costs (realistic, per patient invited):**
+- SMS: ~$0.01 · Email: ~$0 · AI voice calls: Twilio ~$0.014/min + the AI
+  voice (Gemini-class ≈ pennies; Nova Sonic ≈ ~$0.06/min; ElevenLabs
+  ~$0.10–0.30/min — prototype only, no BAA)
+- **Typical: under $0.50/patient even with all 3 calls; ~$0.01 if they join
+  on the SMS.** A 30-patient day ≈ a couple of dollars.
+- Fixed: Spruce ~$25–50/user/mo · Twilio number ~$1.15/mo.
+
+The lesson inside the lesson: the sequence is polite persistence with a
+paper trail — and the paper trail (SOAP + summary email) is what protects
+you when a patient never shows up on the channel.
