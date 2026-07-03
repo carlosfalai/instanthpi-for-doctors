@@ -214,3 +214,122 @@ calling / exhausted→emailed+SOAP.
 The lesson inside the lesson: the sequence is polite persistence with a
 paper trail — and the paper trail (SOAP + summary email) is what protects
 you when a patient never shows up on the channel.
+
+### Lesson 9b — The AI call script + the full code
+
+**When the AI schedules the calls:** the calls are spaced across the day (not
+back-to-back) so the patient has time to act between them — e.g. call #1 at
+T+2h after the SMS if not joined, call #2 at T+5h, call #3 at T+8h. Each call
+asks the patient to **log into Spruce for their conversation** — the call
+never gives medical advice, it only shepherds them onto the secure channel.
+
+**The call script the AI speaks (adapt to your clinic):**
+```
+Bonjour, ici l'assistant de la clinique Truck Stop Santé qui appelle de la
+part du Dr Font. Ceci est un message automatisé. Vous avez une consultation
+en attente. Pour la compléter en toute confidentialité, veuillez vous
+connecter à Spruce — le lien vous a été envoyé par texto et par courriel.
+C'est là que se déroule votre conversation avec le médecin. Si vous avez
+besoin d'aide pour vous connecter, répondez au texto. Merci, et à bientôt
+sur Spruce.
+```
+
+**The full working scripts** (also shipped as files in this repo:
+`invite/invite.js`, `invite/run.ps1`, `invite/.env.example`). Copy, set your
+keys, run in PowerShell, paste today's list.
+
+`run.ps1` — what you launch:
+```powershell
+# run.ps1 — paste today's patients, one per line: Name, phone, email
+Write-Host "Paste patients (Name, +1phone, email). Blank line to finish:" -ForegroundColor Cyan
+$lines = @(); while ($true) { $l = Read-Host; if ([string]::IsNullOrWhiteSpace($l)) { break }; $lines += $l }
+$lines | Set-Content -Encoding utf8 "$PSScriptRoot\today.csv"
+node "$PSScriptRoot\invite.js" "$PSScriptRoot\today.csv"
+```
+
+`invite.js` — the sequence engine (Node; Twilio SMS+voice, SMTP email,
+Spruce poll, fail→SOAP+email). Keys via env. This is a maquette — review,
+then hand to Claude Code to finish/adapt:
+```js
+// invite.js  — usage: node invite.js today.csv
+// env: TWILIO_SID, TWILIO_TOKEN, TWILIO_FROM, SMTP_URL, FROM_EMAIL,
+//      SPRUCE_API_KEY, SPRUCE_BASE, TTS_URL (your AI-voice TwiML endpoint)
+const fs = require('fs');
+const rows = fs.readFileSync(process.argv[2],'utf8').trim().split(/\r?\n/)
+  .map(l => l.split(',').map(s=>s.trim())).map(([name,phone,email])=>({name,phone,email}));
+
+const SPRUCE_LINK = process.env.SPRUCE_LINK || 'https://your.spruce.care/xxxx';
+const CALL_OFFSETS_H = [2,5,8];                 // when the 3 calls fire if not joined
+const CALL_SCRIPT = `Bonjour, ici l'assistant de la clinique de la part du Dr Font. `+
+  `Ceci est un message automatise. Vous avez une consultation en attente. `+
+  `Veuillez vous connecter a Spruce, le lien vous a ete envoye par texto et courriel. `+
+  `C'est la que se deroule votre conversation avec le medecin. Merci.`;
+
+async function twilio(path, params){
+  const url = `https://api.twilio.com/2010-04-01/Accounts/${process.env.TWILIO_SID}/${path}`;
+  const body = new URLSearchParams(params);
+  const r = await fetch(url,{method:'POST',
+    headers:{Authorization:'Basic '+Buffer.from(process.env.TWILIO_SID+':'+process.env.TWILIO_TOKEN).toString('base64'),
+             'Content-Type':'application/x-www-form-urlencoded'}, body});
+  return r.json();
+}
+const sms  = (to,msg)=>twilio('Messages.json',{To:to,From:process.env.TWILIO_FROM,Body:msg});
+// TwiML that speaks CALL_SCRIPT — host a tiny endpoint returning:
+//   <Response><Say language="fr-CA">...CALL_SCRIPT...</Say></Response>
+// or use <Play> with an AI-generated (Nova Sonic/Gemini) audio URL.
+const call = (to)=>twilio('Calls.json',{To:to,From:process.env.TWILIO_FROM,Url:process.env.TTS_URL});
+
+async function email(to,subject,text){
+  const nodemailer = require('nodemailer');
+  const t = nodemailer.createTransport(process.env.SMTP_URL);
+  return t.sendMail({from:process.env.FROM_EMAIL,to,subject,text});
+}
+async function joined(email){                    // poll Spruce: has this contact joined?
+  const r = await fetch(`${process.env.SPRUCE_BASE}/v1/contacts?email=${encodeURIComponent(email)}`,
+    {headers:{Authorization:'Bearer '+process.env.SPRUCE_API_KEY}});
+  const d = await r.json().catch(()=>({}));
+  return !!(d.contacts && d.contacts.some(c=>c.status==='active'));
+}
+async function draftSOAP(p){                      // fail-safe SOAP from booking info (swap in Bedrock BAA)
+  return `SOAP (auto-draft, review required)\nPatient: ${p.name}\nS: pending — patient not reachable on channel\n`+
+         `O: n/a\nA: consultation not completed; 3 call attempts + SMS + email failed\nP: emailed patient all steps; awaiting login`;
+}
+const sleep = h => new Promise(r=>setTimeout(r, h*3600*1000));
+
+(async ()=>{
+  for (const p of rows) {
+    console.log('→', p.name);
+    await sms(p.phone, `Bonjour ${p.name}, connectez-vous a Spruce pour votre consultation: ${SPRUCE_LINK}`);
+    await email(p.email, 'Votre consultation — connectez-vous a Spruce',
+      `Bonjour ${p.name},\n\nConnectez-vous a Spruce pour votre consultation: ${SPRUCE_LINK}\n\nMerci.`);
+  }
+  for (let i=0;i<CALL_OFFSETS_H.length;i++){
+    await sleep(i===0 ? CALL_OFFSETS_H[0] : CALL_OFFSETS_H[i]-CALL_OFFSETS_H[i-1]);
+    for (const p of rows){
+      if (p.done) continue;
+      if (await joined(p.email)) { p.done=true; console.log('✓ joined', p.name); continue; }
+      console.log(`call #${i+1} →`, p.name); await call(p.phone);
+    }
+  }
+  for (const p of rows){
+    if (p.done) continue;
+    console.log('✗ exhausted →', p.name, '→ SOAP + summary email');
+    await email(p.email,'Votre consultation — nos tentatives',
+      `Bonjour ${p.name},\n\nNous avons tente de vous joindre (texto, courriel, 3 appels) sans succes. `+
+      `Connectez-vous a Spruce quand vous le pouvez: ${SPRUCE_LINK}\n\nMerci.`);
+    fs.appendFileSync('soap-drafts.txt', await draftSOAP(p) + '\n\n---\n\n');
+  }
+  console.log('done. review soap-drafts.txt');
+})();
+```
+
+`.env.example`:
+```
+TWILIO_SID=       TWILIO_TOKEN=      TWILIO_FROM=+1...
+SMTP_URL=smtps://user:pass@smtp.host:465   FROM_EMAIL=you@clinic
+SPRUCE_API_KEY=   SPRUCE_BASE=https://api.sprucehealth...   SPRUCE_LINK=
+TTS_URL=https://your-twiml-endpoint   # returns <Say fr-CA> or <Play> AI audio
+```
+
+Costs are in Lesson 9 above. **Hand this whole file to Claude Code** to wire
+your real Spruce endpoints, your AI-voice TwiML, and your clinic details.
