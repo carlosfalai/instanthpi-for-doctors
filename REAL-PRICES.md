@@ -29,10 +29,11 @@ budgeting; prices move.
   speech-out tokens (≈ cents/minute; re-verify at aws.amazon.com/nova/pricing)
 - Claude on Bedrock: Haiku $1/$5 · Sonnet $3/$15 · Opus $5/$25 per 1M tokens
 
-## DeepSeek — api-docs.deepseek.com (no BAA — de-identified text only)
+## DeepSeek — api-docs.deepseek.com (direct API: no BAA → de-identify. Via AWS Bedrock: BAA-covered)
 - **deepseek-v4-flash: $0.14/1M in (cache miss; $0.0028 cache hit!) · $0.28/1M out**
 - deepseek-v4-pro: $0.435/1M in · $0.87/1M out
 - A full consult ≈ **well under 1 cent**. This is the $0.003/consult claim, verified.
+- **BAA path:** DeepSeek's OWN API has no BAA (de-identify first). But DeepSeek models on **AWS Bedrock** run under your AWS BAA (HIPAA-eligible) — you can send identified data there; verify the specific model is on AWS's HIPAA-eligible list before you do.
 
 ## ElevenLabs (voice) — elevenlabs.io/pricing
 - Creator $22/mo (275 agent-min) · Pro $99/mo (1,238 min) · overage **$0.08/min**

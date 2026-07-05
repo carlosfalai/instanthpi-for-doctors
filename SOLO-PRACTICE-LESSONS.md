@@ -370,3 +370,73 @@ Thank you for sharing your experience with our clinic — it helps other people
 understand our services.
 You can leave your review of this experience here: [your review link]
 ```
+
+## Lesson 4b — Keep the tailor kosher (HIPAA): which Claude Code, and how to set up AWS
+
+Claude Code is the tailor — but **which** Claude Code matters once patient data
+is involved.
+
+- **Non-PHI building** (templates, sites, tools, anything with no patient data):
+  the standard Claude Code (Anthropic API) is fine and fastest.
+- **PHI-touching work** (debugging against a live chart, drafting from real
+  patient data): route Claude through **AWS Bedrock — Claude Sonnet under your
+  BAA** (a "claude-phi" setup), so no identifiable data ever touches a
+  non-covered endpoint. Rule of thumb: **non-PHI dev → normal Claude Code;
+  PHI work → Bedrock/BAA.** Same tailor, compliant thread.
+
+**Say it accurately (this is what keeps it honest, not false advertising):**
+Bedrock-under-BAA covers the **AI-processing link**. It does NOT by itself make
+you "HIPAA compliant" — compliance is a property of the **whole system** (signed
+BAA, HIPAA-eligible services only, encryption at rest/in transit, least-privilege
+access, audit logging, minimum-necessary data). Claim **"BAA-covered AI
+processing,"** never "this makes you HIPAA compliant."
+
+### What Claude Code CAN and CANNOT do for your AWS setup
+
+**Allowed / good practice:** Claude writes your infrastructure-as-code
+(Terraform/CloudFormation), least-privilege IAM policies, and setup scripts; runs
+AWS CLI with credentials **you** provisioned; enables Bedrock models; guides you
+through the console steps.
+
+**Against AWS practice — do NOT let an AI do these:**
+- **Accept the AWS Customer Agreement or sign the BAA** — a human authorized
+  representative must; an AI "accepting" it is void.
+- **Sign up accounts autonomously** (bypassing identity / payment / MFA
+  verification) — against AWS Terms of Service.
+- **Generate or hold root or long-lived keys, or "manage logins / turn keys"
+  unsupervised** — against AWS security best practice (no root keys; use MFA +
+  IAM roles + temporary STS credentials; a human stays accountable).
+- **"Approve / disapprove" security decisions on its own** — breaks AWS's
+  shared-responsibility model; **you** keep the legal accountability.
+
+**The compliant model:** **you** create the account, accept the BAA (free via
+AWS Artifact), enable MFA, and create one least-privilege IAM role. **Claude**
+then automates the entire buildout with those scoped credentials + IaC, and
+**you approve**. "Claude sets it all up" — but the legal and credential acts stay
+human.
+
+### Copy-paste setup prompts for Claude Code
+
+**A — guided AWS + BAA + Bedrock setup:**
+> "Walk me through a HIPAA-ready AWS setup for a solo clinic. First list the
+> human-only steps in order (create the account, accept the AWS BAA in AWS
+> Artifact, enable MFA on root, then stop using root). Then generate Terraform
+> for: a least-privilege IAM role for Bedrock + S3, an encrypted S3 bucket
+> (SSE-KMS) with access logging, and Bedrock model access for Claude Sonnet.
+> Explain each resource. I'll run `terraform apply` myself and paste back
+> errors. Never ask for root keys."
+
+**B — PHI-safe routing:**
+> "Configure this project so PHI work routes Claude through AWS Bedrock (Sonnet,
+> my BAA region) via a scoped IAM role using temporary STS credentials, and
+> non-PHI work uses the normal endpoint. Add a check that fails loudly if a PHI
+> path would hit a non-BAA endpoint."
+
+**C — keys the right way:**
+> "Put my API keys (Twilio, Spruce, SRFax) in a gitignored `.env`, add a
+> preflight that validates each key is live before any patient run, never commit
+> or print full keys, and show me how to rotate them."
+
+The lesson inside the lesson: an AI can build almost everything for you, but it
+cannot **be you** for the legal acts (the BAA, account ownership) or hold your
+root credentials. Keep those human; automate the rest.
