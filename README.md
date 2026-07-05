@@ -55,4 +55,25 @@ roadmap): https://buy.stripe.com/4gMcN61u6fehf4I3yfbMQ44
 Module 5 of the course ("Automating a Medical Practice", $35 — free for
 everyone once 1,000 buy it): https://instanthpi.ai/courses
 
+## Working with a developer
+
+Not every physician wants to build their own automation, and that's fine —
+you have two paths from here:
+
+1. **Technical or curious? Build it yourself.** Give
+   [`BUILD-PROMPTS.json`](./BUILD-PROMPTS.json) in this repo to Claude Code
+   (or any coding agent) — it's a set of copy-paste prompts that walk it
+   through standing up the pipeline above for your own practice.
+2. **Prefer to hire it out? Hire a developer who already knows this
+   codebase.** [InstantHPI Developers](https://instanthpi.ai/developers/) is a
+   public directory of developers familiar with InstantHPI / AI-Council —
+   free to browse, message directly (InstantHPI doesn't broker or take a
+   cut), and a **Verified** badge means an active $50/month subscription that
+   also grants them a commercial-use license on the released code, so you're
+   hiring someone allowed to build and support this for you professionally.
+   Directory + signup + chat: https://forms.instanthpi.ai/developers (also
+   linked from https://instanthpi.ai/developers/). The code they'll be
+   working from lives at
+   [instanthpi-for-developers](https://github.com/carlosfalai/instanthpi-for-developers).
+
 Contact: cff@centremedicalfont.ca · Support: https://instanthpi.ai/donations
